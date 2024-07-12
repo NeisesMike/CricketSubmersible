@@ -79,7 +79,7 @@ namespace CricketVehicle
 
             yield return WaitUntilWorldSettled();
 
-            var allRealContainers = VehicleFramework.Admin.GameObjectManager<CricketContainer>.AllSuchObjects.Where(x => x != null && x.transform != null);
+            var allRealContainers = VehicleFramework.Admin.GameObjectManager<CricketContainer>.Where(x => x != null && x.transform != null);
 
             // Containers that were attached at save-time will not already have their contents reloaded.
             var allPossiblyNeedsAttachedContainers = allRealContainers.Where(x => x.storageContainer.container.count == 0);

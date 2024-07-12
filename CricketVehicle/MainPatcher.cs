@@ -138,7 +138,7 @@ namespace CricketVehicle
         internal static List<Tuple<Vector3, innateStorage>> SerializeStorage()
         {
             List<Tuple<Vector3, innateStorage>> allVehiclesStoragesContents = new List<Tuple<Vector3, innateStorage>>();
-            foreach (CricketContainer cc in VehicleFramework.Admin.GameObjectManager<CricketContainer>.AllSuchObjects)
+            foreach (CricketContainer cc in VehicleFramework.Admin.GameObjectManager<CricketContainer>.Where(x=>true))
             {
                 if (cc == null)
                 {
@@ -220,7 +220,7 @@ namespace CricketVehicle
         }
         internal static List<Tuple<Vector3, bool>> SerializeAttachmentStatuses()
         {
-            return VehicleFramework.Admin.GameObjectManager<CricketContainer>.AllSuchObjects
+            return VehicleFramework.Admin.GameObjectManager<CricketContainer>
                 .Where(x => x != null && x.transform != null)
                 .Select(x => new Tuple<Vector3, bool>(x.transform.position, SaveUtils.IsAttached(x)))
                 .ToList();
