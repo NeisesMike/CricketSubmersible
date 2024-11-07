@@ -20,6 +20,7 @@ namespace CricketVehicle
         public static GameObject model = null;
         public static GameObject controlPanel = null;
         public static Atlas.Sprite pingSprite = null;
+        public static Sprite saveSprite = null;
         public static Atlas.Sprite cratePingSprite = null;
         public static Atlas.Sprite crafterSprite = null;
         public static Atlas.Sprite boxCrafterSprite = null;
@@ -43,8 +44,8 @@ namespace CricketVehicle
                 {
                     SpriteAtlas thisAtlas = (SpriteAtlas)obj;
 
-                    Sprite ping = thisAtlas.GetSprite("PingSprite");
-                    pingSprite = new Atlas.Sprite(ping);
+                    saveSprite = thisAtlas.GetSprite("PingSprite");
+                    pingSprite = new Atlas.Sprite(saveSprite);
 
                     Sprite ping2 = thisAtlas.GetSprite("BoxSprite");
                     cratePingSprite = new Atlas.Sprite(ping2);
@@ -102,17 +103,11 @@ namespace CricketVehicle
                 {
                     return "CRICKET";
                 }
-                return main.Get("CricketDefaultName");
+                return main.Get("Cricket");
             }
         }
 
-        public override string Description
-        {
-            get
-            {
-                return "A small spherical submersible built for rapid forward movement of personal and cargo.";
-            }
-        }
+        public override string Description => "A small spherical submersible built for rapid forward movement of personal and cargo.";
 
         public override string EncyclopediaEntry
         {
@@ -146,13 +141,7 @@ namespace CricketVehicle
             }
         }
 
-        public override GameObject VehicleModel
-        {
-            get
-            {
-                return model;
-            }
-        }
+        public override GameObject VehicleModel => model;
 
         public override GameObject StorageRootObject
         {
@@ -293,47 +282,13 @@ namespace CricketVehicle
             }
         }
 
-        public override List<GameObject> WaterClipProxies
-        {
-            get
-            {
-                var list = new List<GameObject>();
-                list.Add(transform.Find("CollisionModel/Sphere").gameObject);
-                /*
-                foreach (Transform child in transform.Find("WaterClipProxies"))
-                {
-                    list.Add(child.gameObject);
-                }
-                */
-                return list;
-            }
-        }
+        public override List<GameObject> WaterClipProxies => new List<GameObject> { transform.Find("CollisionModel/Sphere").gameObject };
 
-        public override List<GameObject> CanopyWindows
-        {
-            get
-            {
-                var list = new List<GameObject>();
-                list.Add(transform.Find("Canopy").gameObject);
-                return list;
-            }
-        }
+        public override List<GameObject> CanopyWindows => new List<GameObject> { transform.Find("Canopy").gameObject };
 
-        public override GameObject BoundingBox
-        {
-            get
-            {
-                return transform.Find("BoundingBox").gameObject;
-            }
-        }
+        public override GameObject BoundingBox => transform.Find("BoundingBox").gameObject;
 
-        public override GameObject CollisionModel
-        {
-            get
-            {
-                return transform.Find("CollisionModel").gameObject;
-            }
-        }
+        public override GameObject CollisionModel => transform.Find("CollisionModel").gameObject;
         
         public override VehicleFramework.Engines.ModVehicleEngine Engine
         {
@@ -343,84 +298,32 @@ namespace CricketVehicle
             }
         }
 
-        public override Atlas.Sprite PingSprite
-        {
-            get
-            {
-                return pingSprite;
-            }
-        }
+        public override Atlas.Sprite PingSprite => pingSprite;
 
-        public override int BaseCrushDepth
-        {
-            get
-            {
-                return 250;
-                // Degasi 1 @ 250
-                // seamoth at 200 now
-            }
-        }
+        public override Sprite SaveFileSprite => saveSprite;
 
-        public override int CrushDepthUpgrade1
-        {
-            get
-            {
-                return 150; // 400
-                // seamoth at 300 now
-            }
-        }
+        // Degasi 1 @ 250
+        // seamoth at 200 now
+        public override int BaseCrushDepth => 250;
+        // 400
+        // seamoth at 300 now
+        public override int CrushDepthUpgrade1 => 150;
+        // 650
+        // Degasi 2 @ 500
+        // seamoth at 500 now
+        public override int CrushDepthUpgrade2 => 250;
+        // 1100, Lost River
+        // 1700 end game
+        // seamoth at 900 now
+        public override int CrushDepthUpgrade3 => 450;
 
-        public override int CrushDepthUpgrade2
-        {
-            get
-            {
-                return 250; // 650
-                // Degasi 2 @ 500
-                // seamoth at 500 now
-            }
-        }
+        public override int MaxHealth => 420;
 
-        public override int CrushDepthUpgrade3
-        {
-            get
-            {
-                return 450; // 1100, Lost River
-                // 1700 end game
-                // seamoth at 900 now
-            }
-        }
+        public override int Mass => 500;
 
-        public override int MaxHealth
-        {
-            get
-            {
-                return 420;
-            }
-        }
+        public override int NumModules => 4;
 
-        public override int Mass
-        {
-            get
-            {
-                return 500;
-            }
-        }
-
-        public override int NumModules
-        {
-            get
-            {
-                return 4;
-            }
-        }
-
-        public override bool HasArms
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool HasArms => false;
         public override Atlas.Sprite CraftingSprite
         {
             get
