@@ -159,7 +159,7 @@ namespace CricketVehicle
             {
                 return;
             }
-            currentMountedContainer.transform.SetParent(null);
+            currentMountedContainer.transform.SetParent(transform.parent);
             currentMountedContainer.transform.Find("FloatCollider").gameObject.SetActive(true);
             currentMountedContainer.transform.Find("AttachedCollider").gameObject.SetActive(false);
             string msg = currentMountedContainer.storageContainer.storageLabel + " Detached";
