@@ -1,21 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using VehicleFramework;
-using System.IO;
-using System.Reflection;
-
-using UnityEngine.U2D;
-using VehicleFramework.VehicleParts;
-using VehicleFramework.VehicleTypes;
-using Nautilus.Assets;
-using Nautilus.Assets.Gadgets;
-using Nautilus.Assets.PrefabTemplates;
-using Nautilus.Crafting;
+using VehicleFramework.Localization;
 
 namespace CricketVehicle
 {
@@ -106,7 +93,7 @@ namespace CricketVehicle
 		}
 		public void OnHandHover(GUIHand hand)
 		{
-			HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, LocalizationManager.GetString(EnglishString.OpenStorage));
+			HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Localizer<EnglishString>.GetString(EnglishString.OpenStorage));
 			HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
 		}
 		public Sequence seq = new Sequence();
