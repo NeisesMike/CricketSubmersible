@@ -290,7 +290,7 @@ namespace CricketVehicle
 
         public override GameObject CollisionModel => transform.Find("CollisionModel").gameObject;
         
-        public override VehicleFramework.Engines.ModVehicleEngine Engine
+        public override VehicleFramework.Engines.VFEngine VFEngine
         {
             get
             {
