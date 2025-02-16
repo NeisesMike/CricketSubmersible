@@ -97,9 +97,7 @@ namespace CricketVehicle
             ccPingInstance.pingType = myPT;
             ccPingInstance.SetLabel("Vehicle");
             VehicleFramework.VehicleManager.mvPings.Add(ccPingInstance);
-            VehicleFramework.VehicleManager.vehicleTypes.Add(new VehicleFramework.VehicleEntry(Cricket.storageContainer, 225, myPT, Cricket.cratePingSprite, ccInfo.TechType));
-
-            Constructor.SpawnPoint sp = new Constructor.SpawnPoint();
+            VehicleFramework.Assets.SpriteHelper.RegisterPingSprite(Cricket.storageContainer.name, myPT, Cricket.cratePingSprite);
 
             return ccInfo.TechType;
         }
