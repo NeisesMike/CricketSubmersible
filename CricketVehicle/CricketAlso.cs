@@ -149,7 +149,7 @@ namespace CricketVehicle
             container.transform.localRotation = Quaternion.identity;
 
             container.transform.Find("FloatCollider").gameObject.SetActive(false);
-            container.transform.Find("AttachedCollider").gameObject.SetActive(false);
+            container.transform.Find("AttachedCollider").gameObject.SetActive(!IsUnderCommand);
 
             currentMountedContainer = container;
         }
