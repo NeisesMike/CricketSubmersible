@@ -51,8 +51,6 @@ namespace CricketVehicle
     {
         internal static CricketConfig config { get; private set; }
         public static TechType cricketContainerTT { get; private set; }
-        internal static SaveData ContainerSaveData { get; private set; }
-
         public TechType RegisterCricketContainer()
         {
             const string ccName = "CricketContainer";
@@ -106,24 +104,7 @@ namespace CricketVehicle
             CricketVehicle.Logger.MyLog = base.Logger;
             Cricket.GetAssets();
             cricketContainerTT = RegisterCricketContainer();
-            SaveData saveData = SaveDataHandler.RegisterSaveDataCache<SaveData>();
-
-            // Update the player position before saving it
-            saveData.OnStartedSaving += (object sender, JsonFileEventArgs e) =>
-            {
-                SaveData data = e.Instance as SaveData;
-                data.InnateStorages = SerializeStorage();
-                data.AttachmentStatuses = SerializeAttachmentStatuses();
-            };
-
-            saveData.OnFinishedLoading += (object sender, JsonFileEventArgs e) =>
-            {
-                ContainerSaveData = e.Instance as SaveData;
-                UWE.CoroutineHost.StartCoroutine(SaveUtils.ReattachContainers(ContainerSaveData));
-            };
         }
-
-
         public void Start()
         {
             config = OptionsPanelHandler.RegisterModOptions<CricketConfig>();
@@ -131,106 +112,6 @@ namespace CricketVehicle
             harmony.PatchAll();
             UWE.CoroutineHost.StartCoroutine(Cricket.Register());
         }
-
-
-        internal static List<Tuple<Vector3, innateStorage>> SerializeStorage()
-        {
-            List<Tuple<Vector3, innateStorage>> allVehiclesStoragesContents = new List<Tuple<Vector3, innateStorage>>();
-            foreach (CricketContainer cc in VehicleFramework.Admin.GameObjectManager<CricketContainer>.Where(x=>true))
-            {
-                if (cc == null)
-                {
-                    continue;
-                }
-                if (!cc.name.Contains("Clone"))
-                {
-                    // skip the prefabs
-                    continue;
-                }
-                innateStorage thisContents = new innateStorage();
-                foreach (var item in cc.storageContainer.container.ToList())
-                {
-                    TechType thisItemType = item.item.GetTechType();
-                    float batteryChargeIfApplicable = -1;
-                    var bat = item.item.GetComponentInChildren<Battery>(true);
-                    if (bat != null)
-                    {
-                        batteryChargeIfApplicable = bat.charge;
-                    }
-                    thisContents.Add(new Tuple<System.String, float>(thisItemType.AsString(), batteryChargeIfApplicable));
-                }
-                allVehiclesStoragesContents.Add(new Tuple<Vector3, innateStorage>(cc.transform.position, thisContents));
-            }
-            return allVehiclesStoragesContents;
-        }
-        internal static IEnumerator DeserializeStorage(CricketContainer cc)
-        {
-            while (!LargeWorldStreamer.main || !LargeWorldStreamer.main.IsReady() || !LargeWorldStreamer.main.IsWorldSettled())
-            {
-                yield return null;
-            }
-            while (WaitScreen.IsWaiting)
-            {
-                yield return null;
-            }
-            yield return new WaitForSeconds(3.2f);
-            List<Tuple<Vector3, innateStorage>> allCricketContainers = ContainerSaveData.InnateStorages;
-            // try to match against a saved vehicle in our list
-            foreach (var container in allCricketContainers)
-            {
-                if (Vector3.Distance(cc.transform.position, container.Item1) < 1)
-                {
-                    foreach (var item in container.Item2)
-                    {
-                        TaskResult<GameObject> result = new TaskResult<GameObject>();
-                        bool resulty = TechTypeExtensions.FromString(item.Item1, out TechType thisTT, true);
-                        yield return CraftData.InstantiateFromPrefabAsync(thisTT, result, false);
-                        GameObject thisItem = result.Get();
-                        if (item.Item2 >= 0)
-                        {
-                            // check whether we *are* a battery xor we *have* a battery
-                            if (thisItem.GetComponent<Battery>() != null)
-                            {
-                                // we are a battery
-                                var bat = thisItem.GetComponentInChildren<Battery>();
-                                bat.charge = item.Item2;
-                            }
-                            else
-                            {
-                                // we have a battery (we are a tool)
-                                // Thankfully we have this naming convention
-                                Transform batSlot = thisItem.transform.Find("BatterySlot");
-                                result = new TaskResult<GameObject>();
-                                yield return CraftData.InstantiateFromPrefabAsync(TechType.Battery, result, false);
-                                GameObject newBat = result.Get();
-                                newBat.GetComponent<Battery>().charge = item.Item2;
-                                newBat.transform.SetParent(batSlot);
-                                newBat.SetActive(false);
-                            }
-                        }
-                        thisItem.transform.SetParent(cc.storageContainer.storageRoot.transform);
-                        cc.storageContainer.container.AddItem(thisItem.GetComponent<Pickupable>());
-                        thisItem.SetActive(false);
-                    }
-                }
-            }
-            yield break;
-        }
-        internal static List<Tuple<Vector3, bool>> SerializeAttachmentStatuses()
-        {
-            return VehicleFramework.Admin.GameObjectManager<CricketContainer>
-                .Where(x => x != null && x.transform != null)
-                .Select(x => new Tuple<Vector3, bool>(x.transform.position, SaveUtils.IsAttached(x)))
-                .ToList();
-        }
-    }
-    [FileName("cricket_containers")]
-    internal class SaveData : SaveDataCache
-    {
-        // location of the storage container : storage contents
-        public List<Tuple<Vector3, innateStorage>> InnateStorages { get; set; }
-        // location of the storage container : attachment status (true only if this container was attached at save-time)
-        public List<Tuple<Vector3, bool>> AttachmentStatuses { get; set; }
     }
 
     [Menu("Cricket Vehicle Options")]

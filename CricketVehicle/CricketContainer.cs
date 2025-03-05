@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using VehicleFramework;
@@ -105,13 +107,12 @@ namespace CricketVehicle
 		{
 			seq.Set(0, true, new SequenceCallback(ChangeFlapState));
 		}
-	}
+    }
 
-	public class CricketContainer : MonoBehaviour
+	public class CricketContainer : MonoBehaviour, IProtoTreeEventListener
 	{
 		public InnateStorageContainer storageContainer;
 		public float marginOfError = 0.9f;
-		private bool wasJustBuilt = false;
 		public static void ApplyShaders(GameObject mv)
 		{
 			// Add the marmoset shader to all renderers
@@ -184,10 +185,7 @@ namespace CricketVehicle
 		}
 		public void Start()
 		{
-			if (!wasJustBuilt)
-			{
-				UWE.CoroutineHost.StartCoroutine(MainPatcher.DeserializeStorage(this));
-			}
+			UWE.CoroutineHost.StartCoroutine(LoadContainer());
 			UWE.CoroutineHost.StartCoroutine(RegisterWithManager());
 		}
 		public IEnumerator RegisterWithManager()
@@ -205,7 +203,6 @@ namespace CricketVehicle
 
 		public void CricketContainerConstructionBeginning()
 		{
-			wasJustBuilt = true;
 			GetComponent<PingInstance>().enabled = false;
 		}
 		public void SubConstructionComplete()
@@ -234,6 +231,110 @@ namespace CricketVehicle
 			if (transform.position.y > 0)
 			{
 				GetComponent<WorldForces>().handleGravity = true;
+			}
+		}
+
+		internal Cricket GetParentCricket()
+		{
+			return VehicleFramework.VehicleManager.VehiclesInPlay
+				.Where(x => (x as Cricket) != null)
+				.Select(x => x as Cricket)
+				.Where(x => x.currentMountedContainer == this)
+				.FirstOrDefault();
+		}
+		internal Cricket GetCricketWithID(string id)
+        {
+			return VehicleFramework.VehicleManager.VehiclesInPlay
+				.Where(x => (x as Cricket) != null)
+				.Select(x => x as Cricket)
+				.Where(x => x.GetComponent<PrefabIdentifier>().Id.Equals(id, StringComparison.OrdinalIgnoreCase))
+				.FirstOrDefault();
+		}
+
+		private string SaveFileName => $"CricketContainer-{GetComponent<PrefabIdentifier>().Id}";
+		private const string NoCricketName = "NoCricket";
+		private List<Tuple<TechType, float, TechType>> GetStorageContents()
+		{
+			List<Tuple<TechType, float, TechType>> result = new List<Tuple<TechType, float, TechType>>();
+			foreach (var item in storageContainer.container.ToList())
+			{
+				TechType thisItemType = item.item.GetTechType();
+				float batteryChargeIfApplicable = -1;
+				var bat = item.item.GetComponentInChildren<Battery>(true);
+				TechType innerBatteryTT = TechType.None;
+				if (bat != null)
+				{
+					batteryChargeIfApplicable = bat.charge;
+					innerBatteryTT = bat.gameObject.GetComponent<TechTag>().type;
+				}
+				result.Add(new Tuple<TechType, float, TechType>(thisItemType, batteryChargeIfApplicable, innerBatteryTT));
+			}
+			return result;
+		}
+		private IEnumerator LoadStorageContents(List<Tuple<TechType, float, TechType>> contents)
+		{
+			TaskResult<GameObject> result = new TaskResult<GameObject>();
+			foreach (var item in contents)
+			{
+				yield return CraftData.InstantiateFromPrefabAsync(item.Item1, result, false);
+				GameObject thisItem = result.Get();
+
+				thisItem.transform.SetParent(storageContainer.storageRoot.transform);
+				try
+				{
+					storageContainer.container.AddItem(thisItem.GetComponent<Pickupable>());
+				}
+				catch (Exception e)
+				{
+					Logger.Error($"Failed to add storage item {thisItem.name} to cricket container {gameObject.name}");
+					Logger.Log(e.Message);
+					Logger.Log(e.StackTrace);
+				}
+				thisItem.SetActive(false);
+				if (item.Item2 >= 0)
+				{
+					// then we have a battery xor we are a battery
+					try
+					{
+						UWE.CoroutineHost.StartCoroutine(VehicleFramework.SaveLoad.SaveLoadUtils.ReloadBatteryPower(thisItem, item.Item2, item.Item3));
+					}
+					catch (Exception e)
+					{
+						Logger.Error($"Failed to reload battery power for cricket container item {thisItem.name} in cricket container {gameObject.name}");
+						Logger.Log(e.Message);
+						Logger.Log(e.StackTrace);
+					}
+				}
+			}
+		}
+		void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
+		{
+			Cricket attached = GetParentCricket();
+			Tuple<string, List<Tuple<TechType, float, TechType>>> saveData = new Tuple<string, List<Tuple<TechType, float, TechType>>>
+				(
+					attached == null ? NoCricketName : attached.GetComponent<PrefabIdentifier>().Id,
+					GetStorageContents()
+				);
+			VehicleFramework.SaveLoad.JsonInterface.Write(SaveFileName, saveData);
+		}
+		void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
+		{
+			// do nothing
+			// for some reason, this doesn't get called!
+			// so do the same job in MonoBehaviour.Start
+		}
+		private IEnumerator LoadContainer()
+		{
+			yield return new WaitUntil(() => true);
+			var savedata = VehicleFramework.SaveLoad.JsonInterface.Read<Tuple<string, List<Tuple<TechType, float, TechType>>>>(SaveFileName);
+			if (savedata.Item2 != null)
+			{
+				UWE.CoroutineHost.StartCoroutine(LoadStorageContents(savedata.Item2));
+			}
+			if (!savedata.Item1.Equals(NoCricketName, StringComparison.OrdinalIgnoreCase))
+			{
+				yield return new WaitUntil(() => GetCricketWithID(savedata.Item1) != null);
+				GetCricketWithID(savedata.Item1).AttachContainer(this);
 			}
 		}
 	}
