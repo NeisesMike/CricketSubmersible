@@ -10,6 +10,6 @@ namespace CricketVehicle
     {
         public const string PLUGIN_GUID = "com.mikjaw.subnautica.cricket.mod";
         public const string PLUGIN_NAME = "CricketVehicle";
-        public const string PLUGIN_VERSION = "1.3.0";
+        public const string PLUGIN_VERSION = "1.4.0";
     }
 }
