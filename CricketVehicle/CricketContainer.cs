@@ -327,6 +327,10 @@ namespace CricketVehicle
 		{
 			yield return new WaitUntil(() => true);
 			var savedata = VehicleFramework.SaveLoad.JsonInterface.Read<Tuple<string, List<Tuple<TechType, float, TechType>>>>(SaveFileName);
+			if (savedata == default)
+			{
+				yield break;
+			}
 			if (savedata.Item2 != null)
 			{
 				UWE.CoroutineHost.StartCoroutine(LoadStorageContents(savedata.Item2));
