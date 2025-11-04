@@ -26,13 +26,13 @@ namespace CricketVehicle
 		[HarmonyPatch(nameof(ConstructorInput.GetCraftTransform))]
 		public static void GetCraftTransformPostfix(ConstructorInput __instance, TechType techType, ref Vector3 position, ref Quaternion rotation)
 		{
-			if (techType == MainPatcher.cricketContainerTT)
+			if (techType == MainPatcher.CricketContainerTT)
 			{
 				position = __instance.constructor.GetItemSpawnPoint(TechType.Seamoth).position;
 				rotation = __instance.constructor.GetItemSpawnPoint(TechType.Seamoth).rotation;
 				return;
 			}
-			var ListofCrickets = VehicleFramework.VehicleManager.vehicleTypes.Where(x => x.mv as Cricket != null);
+			var ListofCrickets = VehicleFramework.Admin.VehicleManager.GetVehicleTypesWhere(x => x.mv as Cricket != null);
 			if (ListofCrickets.Count() < 1)
 			{
 				return;

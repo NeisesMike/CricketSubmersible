@@ -10,7 +10,10 @@ using System.IO;
 using System.Reflection;
 
 using UnityEngine.U2D;
-using VehicleFramework.VehicleParts;
+using VehicleFramework.VehicleComponents;
+using VehicleFramework.StorageComponents;
+using VehicleFramework.MiscComponents;
+using VehicleFramework.VehicleBuilding;
 using VehicleFramework.VehicleTypes;
 
 namespace CricketVehicle
@@ -19,11 +22,11 @@ namespace CricketVehicle
     {
         public static GameObject model = null;
         public static GameObject controlPanel = null;
-        public static Atlas.Sprite pingSprite = null;
+        public static UnityEngine.Sprite pingSprite = null;
         public static Sprite saveSprite = null;
-        public static Atlas.Sprite cratePingSprite = null;
-        public static Atlas.Sprite crafterSprite = null;
-        public static Atlas.Sprite boxCrafterSprite = null;
+        public static UnityEngine.Sprite cratePingSprite = null;
+        public static UnityEngine.Sprite crafterSprite = null;
+        public static UnityEngine.Sprite boxCrafterSprite = null;
         public static GameObject storageContainer = null;
         
         public static void GetAssets()
@@ -43,18 +46,10 @@ namespace CricketVehicle
                 if (obj.ToString().Contains("SpriteAtlas"))
                 {
                     SpriteAtlas thisAtlas = (SpriteAtlas)obj;
-
-                    saveSprite = thisAtlas.GetSprite("PingSprite");
-                    pingSprite = new Atlas.Sprite(saveSprite);
-
-                    Sprite ping2 = thisAtlas.GetSprite("BoxSprite");
-                    cratePingSprite = new Atlas.Sprite(ping2);
-
-                    Sprite ping3 = thisAtlas.GetSprite("CrafterSprite");
-                    crafterSprite = new Atlas.Sprite(ping3);
-
-                    Sprite ping4 = thisAtlas.GetSprite("BoxCrafterSprite");
-                    boxCrafterSprite = new Atlas.Sprite(ping4);
+                    pingSprite = saveSprite = thisAtlas.GetSprite("PingSprite");
+                    cratePingSprite = thisAtlas.GetSprite("BoxSprite");
+                    crafterSprite = thisAtlas.GetSprite("CrafterSprite");
+                    boxCrafterSprite = thisAtlas.GetSprite("BoxCrafterSprite");
                 }
                 else if (obj.ToString().Contains("Cricket"))
                 {
@@ -91,7 +86,7 @@ namespace CricketVehicle
         public static IEnumerator Register()
         {
             Submersible cricket = model.EnsureComponent<Cricket>() as Submersible;
-            yield return UWE.CoroutineHost.StartCoroutine(VehicleRegistrar.RegisterVehicle(cricket));
+            yield return UWE.CoroutineHost.StartCoroutine(VehicleFramework.Admin.VehicleRegistrar.RegisterVehicle(cricket));
         }
 
         public override string vehicleDefaultName
@@ -163,7 +158,7 @@ namespace CricketVehicle
         {
             get
             {
-                VehicleFramework.VehicleParts.VehiclePilotSeat vps = new VehicleFramework.VehicleParts.VehiclePilotSeat();
+                VehicleFramework.VehicleBuilding.VehiclePilotSeat vps = new VehicleFramework.VehicleBuilding.VehiclePilotSeat();
                 Transform mainSeat = transform.Find("Chair");
                 vps.Seat = mainSeat.gameObject;
                 vps.SitLocation = mainSeat.Find("SitPosition").gameObject;
@@ -177,9 +172,9 @@ namespace CricketVehicle
         {
             get
             {
-                var list = new List<VehicleFramework.VehicleParts.VehicleHatchStruct>();
+                var list = new List<VehicleFramework.VehicleBuilding.VehicleHatchStruct>();
 
-                VehicleFramework.VehicleParts.VehicleHatchStruct interior_vhs = new VehicleFramework.VehicleParts.VehicleHatchStruct();
+                VehicleFramework.VehicleBuilding.VehicleHatchStruct interior_vhs = new VehicleFramework.VehicleBuilding.VehicleHatchStruct();
                 Transform intHatch = transform.Find("Hatch");
                 interior_vhs.Hatch = intHatch.gameObject;
                 interior_vhs.ExitLocation = intHatch.Find("ExitPosition");
@@ -187,7 +182,7 @@ namespace CricketVehicle
                 list.Add(interior_vhs);
 
 
-                VehicleFramework.VehicleParts.VehicleHatchStruct interior_vhs2 = new VehicleFramework.VehicleParts.VehicleHatchStruct();
+                VehicleFramework.VehicleBuilding.VehicleHatchStruct interior_vhs2 = new VehicleFramework.VehicleBuilding.VehicleHatchStruct();
                 interior_vhs2.Hatch = transform.Find("CollisionModel/Sphere").gameObject;
                 interior_vhs2.ExitLocation = interior_vhs.ExitLocation;
                 interior_vhs2.SurfaceExitLocation = interior_vhs.ExitLocation;
@@ -201,7 +196,7 @@ namespace CricketVehicle
         {
             get
             {
-                var list = new List<VehicleFramework.VehicleParts.VehicleStorage>();
+                var list = new List<VehicleFramework.VehicleBuilding.VehicleStorage>();
                 return list;
             }
         }
@@ -210,9 +205,9 @@ namespace CricketVehicle
         {
             get
             {
-                var list = new List<VehicleFramework.VehicleParts.VehicleStorage>();
+                var list = new List<VehicleFramework.VehicleBuilding.VehicleStorage>();
 
-                VehicleFramework.VehicleParts.VehicleStorage thisVS = new VehicleFramework.VehicleParts.VehicleStorage();
+                VehicleFramework.VehicleBuilding.VehicleStorage thisVS = new VehicleFramework.VehicleBuilding.VehicleStorage();
                 Transform thisStorage = transform.Find("SFCrate");
                 thisVS.Container = thisStorage.gameObject;
                 thisVS.Height = 6;
@@ -227,8 +222,8 @@ namespace CricketVehicle
         {
             get
             {
-                var list = new List<VehicleFramework.VehicleParts.VehicleUpgrades>();
-                VehicleFramework.VehicleParts.VehicleUpgrades vu = new VehicleFramework.VehicleParts.VehicleUpgrades();
+                var list = new List<VehicleFramework.VehicleBuilding.VehicleUpgrades>();
+                VehicleFramework.VehicleBuilding.VehicleUpgrades vu = new VehicleFramework.VehicleBuilding.VehicleUpgrades();
                 vu.Interface = transform.Find("CollisionModel/MainProp").gameObject;
                 vu.Flap = vu.Interface;
                 list.Add(vu);
@@ -240,13 +235,13 @@ namespace CricketVehicle
         {
             get
             {
-                var list = new List<VehicleFramework.VehicleParts.VehicleBattery>();
+                var list = new List<VehicleFramework.VehicleBuilding.VehicleBattery>();
 
-                VehicleFramework.VehicleParts.VehicleBattery vb1 = new VehicleFramework.VehicleParts.VehicleBattery();
+                VehicleFramework.VehicleBuilding.VehicleBattery vb1 = new VehicleFramework.VehicleBuilding.VehicleBattery();
                 vb1.BatterySlot = transform.Find("CollisionModel/LeftProp").gameObject;
                 list.Add(vb1);
 
-                VehicleFramework.VehicleParts.VehicleBattery vb2 = new VehicleFramework.VehicleParts.VehicleBattery();
+                VehicleFramework.VehicleBuilding.VehicleBattery vb2 = new VehicleFramework.VehicleBuilding.VehicleBattery();
                 vb2.BatterySlot = transform.Find("CollisionModel/RightProp").gameObject;
                 list.Add(vb2);
 
@@ -254,21 +249,13 @@ namespace CricketVehicle
             }
         }
 
-        public override List<VehicleBattery> BackupBatteries
-        {
-            get
-            {
-                return null;
-            }
-        }
-
         public override List<VehicleFloodLight> HeadLights
         {
             get
             {
-                var list = new List<VehicleFramework.VehicleParts.VehicleFloodLight>();
+                var list = new List<VehicleFramework.VehicleBuilding.VehicleFloodLight>();
 
-                VehicleFramework.VehicleParts.VehicleFloodLight mainLight = new VehicleFramework.VehicleParts.VehicleFloodLight
+                VehicleFramework.VehicleBuilding.VehicleFloodLight mainLight = new VehicleFramework.VehicleBuilding.VehicleFloodLight
                 {
                     Light = transform.Find("lights_parent/HeadLights/Main").gameObject,
                     Angle = 70,
@@ -286,9 +273,9 @@ namespace CricketVehicle
 
         public override List<GameObject> CanopyWindows => new List<GameObject> { transform.Find("Canopy").gameObject };
 
-        public override GameObject BoundingBox => transform.Find("BoundingBox").gameObject;
+        public override BoxCollider BoundingBoxCollider => transform.Find("BoundingBox")?.gameObject.GetComponent<BoxCollider>();
 
-        public override GameObject CollisionModel => transform.Find("CollisionModel").gameObject;
+        public override GameObject[] CollisionModel => new GameObject[] { transform.Find("CollisionModel").gameObject };
         
         public override VehicleFramework.Engines.VFEngine VFEngine
         {
@@ -298,7 +285,7 @@ namespace CricketVehicle
             }
         }
 
-        public override Atlas.Sprite PingSprite => pingSprite;
+        public override UnityEngine.Sprite PingSprite => pingSprite;
 
         public override Sprite SaveFileSprite => saveSprite;
 
@@ -324,7 +311,7 @@ namespace CricketVehicle
         public override int NumModules => 4;
 
         public override bool HasArms => false;
-        public override Atlas.Sprite CraftingSprite
+        public override UnityEngine.Sprite CraftingSprite
         {
             get
             {

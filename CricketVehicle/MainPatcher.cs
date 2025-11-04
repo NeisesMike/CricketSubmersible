@@ -50,32 +50,32 @@ namespace CricketVehicle
     public class MainPatcher : BaseUnityPlugin
     {
         internal static CricketConfig config { get; private set; }
-        public static TechType cricketContainerTT { get; private set; }
+        public static TechType CricketContainerTT { get; private set; }
+        const string CricketContainerName = "CricketContainer";
         public TechType RegisterCricketContainer()
         {
-            const string ccName = "CricketContainer";
-            PrefabInfo ccInfo = PrefabInfo.WithTechType(ccName, ccName, "A haulable container designed for the Cricket submersible.");
+            PrefabInfo ccInfo = PrefabInfo.WithTechType(CricketContainerName, CricketContainerName, "A haulable container designed for the Cricket submersible.");
             ccInfo.WithIcon(Cricket.boxCrafterSprite);
             PDAEncyclopedia.EntryData entry = new PDAEncyclopedia.EntryData
             {
-                key = ccName,
+                key = CricketContainerName,
                 path = "Tech/Vehicles",
                 nodes = new[] { "Tech", "Vehicles" },
                 unlocked = true,
                 popup = null,
                 image = null,
             };
-            LanguageHandler.SetLanguageLine("Ency_" + ccName, ccName);
-            LanguageHandler.SetLanguageLine("EncyDesc_" + ccName, "The Cricket Container is a special type of floating locker that can be hauled by a Cricket Submersible.");
+            LanguageHandler.SetLanguageLine("Ency_" + CricketContainerName, CricketContainerName);
+            LanguageHandler.SetLanguageLine("EncyDesc_" + CricketContainerName, "The Cricket Container is a special type of floating locker that can be hauled by a Cricket Submersible.");
             Nautilus.Handlers.PDAHandler.AddEncyclopediaEntry(entry);
 
             CustomPrefab cricketContainerCustomPrefab = new CustomPrefab(ccInfo);
             Cricket.storageContainer.EnsureComponent<TechTag>().type = ccInfo.TechType;
-            Cricket.storageContainer.EnsureComponent<PrefabIdentifier>().ClassId = ccName;
+            Cricket.storageContainer.EnsureComponent<PrefabIdentifier>().ClassId = CricketContainerName;
             cricketContainerCustomPrefab.SetGameObject(Cricket.storageContainer);
 
 
-            RecipeData recipe = new RecipeData(new CraftData.Ingredient(TechType.Titanium, 2), new CraftData.Ingredient(TechType.Copper, 1));
+            RecipeData recipe = new RecipeData(new Ingredient(TechType.Titanium, 2), new Ingredient(TechType.Copper, 1));
 
             cricketContainerCustomPrefab
                 .SetRecipe(recipe)
@@ -87,15 +87,15 @@ namespace CricketVehicle
 
             cricketContainerCustomPrefab.Register();
 
-            PingType myPT = VehicleFramework.VehicleManager.RegisterPingType((PingType)225);
+            PingType myPT = VehicleFramework.Admin.VFPingManager.RegisterPingType(CricketContainerName);
 
             // Add this ping sprite to the VF master list, so it's patched in correctly
             var ccPingInstance = Cricket.storageContainer.EnsureComponent<PingInstance>();
             ccPingInstance.origin = Cricket.storageContainer.transform;
             ccPingInstance.pingType = myPT;
             ccPingInstance.SetLabel("Vehicle");
-            VehicleFramework.VehicleManager.mvPings.Add(ccPingInstance);
-            VehicleFramework.Assets.SpriteHelper.RegisterPingSprite(Cricket.storageContainer.name, myPT, Cricket.cratePingSprite);
+            //VehicleFramework.VehicleManager.mvPings.Add(ccPingInstance);
+            VehicleFramework.Assets.SpriteHelper.RegisterPingSprite(CricketContainerName, myPT, Cricket.cratePingSprite);
 
             return ccInfo.TechType;
         }
@@ -103,7 +103,7 @@ namespace CricketVehicle
         {
             CricketVehicle.Logger.MyLog = base.Logger;
             Cricket.GetAssets();
-            cricketContainerTT = RegisterCricketContainer();
+            CricketContainerTT = RegisterCricketContainer();
         }
         public void Start()
         {

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using VehicleFramework;
-using VehicleFramework.Localization;
+using VehicleFramework.StorageComponents;
 
 namespace CricketVehicle
 {
@@ -51,7 +51,7 @@ namespace CricketVehicle
 		}
 		public void Start()
 		{
-			myContainer = GetComponent<InnateStorageContainer>().container;
+			myContainer = GetComponent<InnateStorageContainer>().Container;
 		}
 		protected void OnDisable()
 		{
@@ -95,7 +95,7 @@ namespace CricketVehicle
 		}
 		public void OnHandHover(GUIHand hand)
 		{
-			HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Localizer<EnglishString>.GetString(EnglishString.OpenStorage));
+			HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFOpenStorage"));
 			HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
 		}
 		public Sequence seq = new Sequence();
@@ -161,15 +161,15 @@ namespace CricketVehicle
 			storageContainer.height = 6;
 			storageContainer.width = 5;
 
-			FMODAsset storageCloseSound = SeamothHelper.Seamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().closeSound;
-			FMODAsset storageOpenSound = SeamothHelper.Seamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().openSound;
+			FMODAsset storageCloseSound = VehicleFramework.Assets.SeamothHelper.Seamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().closeSound;
+			FMODAsset storageOpenSound = VehicleFramework.Assets.SeamothHelper.Seamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().openSound;
 			var inp = gameObject.EnsureComponent<CricketStorageInput>();
 
 			inp.model = gameObject;
 			inp.openSound = storageOpenSound;
 			inp.closeSound = storageCloseSound;
 
-			VehicleBuilder.CopyComponent<WorldForces>(SeamothHelper.Seamoth.GetComponent<SeaMoth>().worldForces, gameObject);
+			VehicleFramework.VehicleBuilding.VehicleBuilder.CopyComponent<WorldForces>(VehicleFramework.Assets.SeamothHelper.Seamoth.GetComponent<SeaMoth>().worldForces, gameObject);
 			var wf = gameObject.GetComponent<WorldForces>();
 			wf.useRigidbody = GetComponent<Rigidbody>();
 			wf.underwaterGravity = 0f;
@@ -236,16 +236,16 @@ namespace CricketVehicle
 
 		internal Cricket GetParentCricket()
 		{
-			return VehicleFramework.VehicleManager.VehiclesInPlay
-				.Where(x => (x as Cricket) != null)
+			return VehicleFramework.Admin.VehicleManager
+				.GetVehiclesWhere(x => (x as Cricket) != null)
 				.Select(x => x as Cricket)
 				.Where(x => x.currentMountedContainer == this)
 				.FirstOrDefault();
 		}
 		internal Cricket GetCricketWithID(string id)
         {
-			return VehicleFramework.VehicleManager.VehiclesInPlay
-				.Where(x => (x as Cricket) != null)
+			return VehicleFramework.Admin.VehicleManager
+				.GetVehiclesWhere(x => (x as Cricket) != null)
 				.Select(x => x as Cricket)
 				.Where(x => x.GetComponent<PrefabIdentifier>().Id.Equals(id, StringComparison.OrdinalIgnoreCase))
 				.FirstOrDefault();
@@ -256,7 +256,7 @@ namespace CricketVehicle
 		private List<Tuple<TechType, float, TechType>> GetStorageContents()
 		{
 			List<Tuple<TechType, float, TechType>> result = new List<Tuple<TechType, float, TechType>>();
-			foreach (var item in storageContainer.container.ToList())
+			foreach (var item in storageContainer.Container.ToList())
 			{
 				TechType thisItemType = item.item.GetTechType();
 				float batteryChargeIfApplicable = -1;
@@ -282,7 +282,7 @@ namespace CricketVehicle
 				thisItem.transform.SetParent(storageContainer.storageRoot.transform);
 				try
 				{
-					storageContainer.container.AddItem(thisItem.GetComponent<Pickupable>());
+					storageContainer.Container.AddItem(thisItem.GetComponent<Pickupable>());
 				}
 				catch (Exception e)
 				{
