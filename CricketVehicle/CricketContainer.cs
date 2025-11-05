@@ -169,7 +169,7 @@ namespace CricketVehicle
 			inp.openSound = storageOpenSound;
 			inp.closeSound = storageCloseSound;
 
-			VehicleFramework.VehicleBuilding.VehicleBuilder.CopyComponent<WorldForces>(VehicleFramework.Assets.SeamothHelper.Seamoth.GetComponent<SeaMoth>().worldForces, gameObject);
+			CopyComponent<WorldForces>(VehicleFramework.Assets.SeamothHelper.Seamoth.GetComponent<SeaMoth>().worldForces, gameObject);
 			var wf = gameObject.GetComponent<WorldForces>();
 			wf.useRigidbody = GetComponent<Rigidbody>();
 			wf.underwaterGravity = 0f;
@@ -340,6 +340,17 @@ namespace CricketVehicle
 				yield return new WaitUntil(() => GetCricketWithID(savedata.Item1) != null);
 				GetCricketWithID(savedata.Item1).AttachContainer(this);
 			}
+		}
+		public static T CopyComponent<T>(T original, GameObject destination) where T : Component
+		{
+			System.Type type = original.GetType();
+			Component copy = destination.EnsureComponent(type);
+			System.Reflection.FieldInfo[] fields = type.GetFields();
+			foreach (System.Reflection.FieldInfo field in fields)
+			{
+				field.SetValue(copy, field.GetValue(original));
+			}
+			return copy as T;
 		}
 	}
 }
