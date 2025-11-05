@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using VehicleFramework;
-using VehicleFramework.StorageComponents;
+using VehicleFramework.VehicleChildComponents;
 
 namespace CricketVehicle
 {
